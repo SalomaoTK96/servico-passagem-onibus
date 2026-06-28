@@ -7,7 +7,7 @@ Projeto acadêmico desenvolvido para a disciplina de **Banco de Dados II** da **
 ## 👥 Autores
 
 - Salomão Patrick França Alves Panas
-- João Vitor
+- João Victor Serpa
 
 **Professor:** Maurício Pasetto de Freitas  
 **Instituição:** UNIVALI – Escola Politécnica 
