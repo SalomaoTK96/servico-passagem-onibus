@@ -3,6 +3,7 @@ package menu;
 import dao.ViagemDAO;
 import model.Viagem;
 
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,7 +18,7 @@ public class MenuViagem {
     }
 
     public void exibir() {
-        int opcao;
+        int opcao = -1;
         do {
             System.out.println("\n===== MENU VIAGEM =====");
             System.out.println("1. Cadastrar viagem");
@@ -27,8 +28,16 @@ public class MenuViagem {
             System.out.println("5. Remover viagem");
             System.out.println("0. Voltar");
             System.out.print("Opcao: ");
-            opcao = sc.nextInt();
-            sc.nextLine();
+
+            // tratativa de erro caso o seja digite algo que não seja número
+            try {
+                opcao = sc.nextInt();
+                sc.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("Opcao invalida! Digite apenas numeros.");
+                sc.nextLine();
+                continue;
+            }
 
             switch (opcao) {
                 case 1 -> cadastrar();
@@ -50,22 +59,27 @@ public class MenuViagem {
 
     private void cadastrar() {
         System.out.println("\n--- Cadastrar Viagem ---");
-        System.out.print("Data de partida (AAAA-MM-DD HH:MM:SS): ");
-        String partida = sc.nextLine();
-        System.out.print("Data de chegada (AAAA-MM-DD HH:MM:SS): ");
-        String chegada = sc.nextLine();
-        System.out.print("Status (agendada/em_andamento/concluida/cancelada): ");
-        String status = sc.nextLine();
-        System.out.print("ID do onibus: ");
-        int idOnibus = sc.nextInt();
-        System.out.print("ID da rota: ");
-        int idRota = sc.nextInt();
-        System.out.print("ID do motorista: ");
-        int idMotorista = sc.nextInt();
-        sc.nextLine();
+        try {
+            System.out.print("Data de partida (AAAA-MM-DD HH:MM:SS): ");
+            String partida = sc.nextLine();
+            System.out.print("Data de chegada (AAAA-MM-DD HH:MM:SS): ");
+            String chegada = sc.nextLine();
+            System.out.print("Status (agendada/em_andamento/concluida/cancelada): ");
+            String status = sc.nextLine();
+            System.out.print("ID do onibus: ");
+            int idOnibus = sc.nextInt();
+            System.out.print("ID da rota: ");
+            int idRota = sc.nextInt();
+            System.out.print("ID do motorista: ");
+            int idMotorista = sc.nextInt();
+            sc.nextLine();
 
-        Viagem v = new Viagem(0, partida, chegada, status, idOnibus, idRota, idMotorista);
-        dao.inserir(v);
+            Viagem v = new Viagem(0, partida, chegada, status, idOnibus, idRota, idMotorista);
+            dao.inserir(v);
+        } catch (InputMismatchException e) {
+            System.out.println("Valor invalido! Digite apenas numeros nos campos de ID.");
+            sc.nextLine();
+        }
         pausar();
     }
 
@@ -82,39 +96,54 @@ public class MenuViagem {
 
     private void buscar() {
         System.out.print("\nID da viagem: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-        Viagem v = dao.buscarPorId(id);
-        if (v != null) {
-            System.out.println(v);
-        } else {
-            System.out.println("Viagem nao encontrada.");
+        try {
+            int id = sc.nextInt();
+            sc.nextLine();
+            Viagem v = dao.buscarPorId(id);
+            if (v != null) {
+                System.out.println(v);
+            } else {
+                System.out.println("Viagem nao encontrada.");
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("ID invalido! Digite apenas numeros.");
+            sc.nextLine();
         }
         pausar();
     }
 
     private void atualizar() {
         System.out.print("\nID da viagem a atualizar: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-        Viagem v = dao.buscarPorId(id);
-        if (v == null) {
-            System.out.println("Viagem nao encontrada.");
-            pausar();
-            return;
+        try {
+            int id = sc.nextInt();
+            sc.nextLine();
+            Viagem v = dao.buscarPorId(id);
+            if (v == null) {
+                System.out.println("Viagem nao encontrada.");
+                pausar();
+                return;
+            }
+            System.out.print("Novo status (" + v.getStatus() + "): ");
+            String status = sc.nextLine();
+            if (!status.isEmpty()) v.setStatus(status);
+            dao.atualizar(v);
+        } catch (InputMismatchException e) {
+            System.out.println("ID invalido! Digite apenas numeros.");
+            sc.nextLine();
         }
-        System.out.print("Novo status (" + v.getStatus() + "): ");
-        String status = sc.nextLine();
-        if (!status.isEmpty()) v.setStatus(status);
-        dao.atualizar(v);
         pausar();
     }
 
     private void remover() {
         System.out.print("\nID da viagem a remover: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-        dao.deletar(id);
+        try {
+            int id = sc.nextInt();
+            sc.nextLine();
+            dao.deletar(id);
+        } catch (InputMismatchException e) {
+            System.out.println("ID invalido! Digite apenas numeros.");
+            sc.nextLine();
+        }
         pausar();
     }
 }

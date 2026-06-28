@@ -1,5 +1,6 @@
 package menu;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 // menu principal que direciona para os submenus do sistema
@@ -8,7 +9,7 @@ public class MenuPrincipal {
     private final Scanner sc = new Scanner(System.in);
 
     public void exibir() {
-        int opcao;
+        int opcao = -1;
         do {
             System.out.println("\n========================================");
             System.out.println("  SISTEMA DE PASSAGENS - CATARINENSE");
@@ -20,8 +21,16 @@ public class MenuPrincipal {
             System.out.println("0. Sair");
             System.out.println("========================================");
             System.out.print("Opcao: ");
-            opcao = sc.nextInt();
-            sc.nextLine();
+
+            // tratativa de erro caso o seja digite algo que não seja número
+            try {
+                opcao = sc.nextInt();
+                sc.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("Opcao invalida! Digite apenas numeros.");
+                sc.nextLine(); // limpa o buffer do scanner
+                continue;
+            }
 
             // direciona para o menu correspondente
             switch (opcao) {

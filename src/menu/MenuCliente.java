@@ -1,13 +1,9 @@
-/**
- * Sistema de Passagens de Ônibus - Catarinense
- * Disciplina: Banco de Dados II - UNIVALI
- * Autores: Salomão Patrick França Alves Panas, João Vitor
- */
 package menu;
 
 import dao.ClienteDAO;
 import model.Cliente;
 
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -23,7 +19,7 @@ public class MenuCliente {
 
     // exibe o menu e aguarda a escolha do usuário
     public void exibir() {
-        int opcao;
+        int opcao = -1;
         do {
             System.out.println("\n===== MENU CLIENTE =====");
             System.out.println("1. Cadastrar cliente");
@@ -33,8 +29,16 @@ public class MenuCliente {
             System.out.println("5. Remover cliente");
             System.out.println("0. Voltar");
             System.out.print("Opcao: ");
-            opcao = sc.nextInt();
-            sc.nextLine();
+
+            // tratativa de erro caso o seja digite algo que não seja número
+            try {
+                opcao = sc.nextInt();
+                sc.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("Opcao invalida! Digite apenas numeros.");
+                sc.nextLine(); // limpa o buffer do scanner
+                continue;
+            }
 
             switch (opcao) {
                 case 1 -> cadastrar();
@@ -86,13 +90,18 @@ public class MenuCliente {
     // busca um cliente pelo id informado
     private void buscar() {
         System.out.print("\nID do cliente: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-        Cliente c = dao.buscarPorId(id);
-        if (c != null) {
-            System.out.println(c);
-        } else {
-            System.out.println("Cliente nao encontrado.");
+        try {
+            int id = sc.nextInt();
+            sc.nextLine();
+            Cliente c = dao.buscarPorId(id);
+            if (c != null) {
+                System.out.println(c);
+            } else {
+                System.out.println("Cliente nao encontrado.");
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("ID invalido! Digite apenas numeros.");
+            sc.nextLine();
         }
         pausar();
     }
@@ -100,38 +109,49 @@ public class MenuCliente {
     // busca o cliente pelo id e permite alterar os dados
     private void atualizar() {
         System.out.print("\nID do cliente a atualizar: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-        Cliente c = dao.buscarPorId(id);
-        if (c == null) {
-            System.out.println("Cliente nao encontrado.");
-            pausar();
-            return;
+        try {
+            int id = sc.nextInt();
+            sc.nextLine();
+            Cliente c = dao.buscarPorId(id);
+            if (c == null) {
+                System.out.println("Cliente nao encontrado.");
+                pausar();
+                return;
+            }
+            // mostra o valor atual entre parênteses e só atualiza se digitar algo novo
+            System.out.print("Novo nome (" + c.getNome() + "): ");
+            String nome = sc.nextLine();
+            System.out.print("Novo CPF (" + c.getCpf() + "): ");
+            String cpf = sc.nextLine();
+            System.out.print("Novo email (" + c.getEmail() + "): ");
+            String email = sc.nextLine();
+            System.out.print("Nova data nascimento (" + c.getDataNascimento() + "): ");
+            String data = sc.nextLine();
+
+            if (!nome.isEmpty())  c.setNome(nome);
+            if (!cpf.isEmpty())   c.setCpf(cpf);
+            if (!email.isEmpty()) c.setEmail(email);
+            if (!data.isEmpty())  c.setDataNascimento(data);
+
+            dao.atualizar(c);
+        } catch (InputMismatchException e) {
+            System.out.println("ID invalido! Digite apenas numeros.");
+            sc.nextLine();
         }
-        System.out.print("Novo nome (" + c.getNome() + "): ");
-        String nome = sc.nextLine();
-        System.out.print("Novo CPF (" + c.getCpf() + "): ");
-        String cpf = sc.nextLine();
-        System.out.print("Novo email (" + c.getEmail() + "): ");
-        String email = sc.nextLine();
-        System.out.print("Nova data nascimento (" + c.getDataNascimento() + "): ");
-        String data = sc.nextLine();
-
-        if (!nome.isEmpty())  c.setNome(nome);
-        if (!cpf.isEmpty())   c.setCpf(cpf);
-        if (!email.isEmpty()) c.setEmail(email);
-        if (!data.isEmpty())  c.setDataNascimento(data);
-
-        dao.atualizar(c);
         pausar();
     }
 
     // remove o cliente com o id informado
     private void remover() {
         System.out.print("\nID do cliente a remover: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-        dao.deletar(id);
+        try {
+            int id = sc.nextInt();
+            sc.nextLine();
+            dao.deletar(id);
+        } catch (InputMismatchException e) {
+            System.out.println("ID invalido! Digite apenas numeros.");
+            sc.nextLine();
+        }
         pausar();
     }
 }
