@@ -2,7 +2,9 @@ package menu;
 
 import dao.ViagemDAO;
 import model.Viagem;
+import connection.ConnectionDB;
 
+import java.sql.*;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -29,7 +31,7 @@ public class MenuViagem {
             System.out.println("0. Voltar");
             System.out.print("Opcao: ");
 
-            // tratativa de erro caso o seja digite algo que não seja número
+            // tratativa de erro caso o usuário digite algo que não seja número
             try {
                 opcao = sc.nextInt();
                 sc.nextLine();
@@ -57,6 +59,62 @@ public class MenuViagem {
         sc.nextLine();
     }
 
+    // lista os ônibus disponíveis antes de pedir o ID
+    private void listarOnibus() {
+        System.out.println("\nOnibus disponiveis:");
+        String sql = "SELECT o.id_onibus, o.placa, m.descricao, m.capacidade, m.tipo " +
+                "FROM Onibus o JOIN Modelo_Onibus m ON (o.id_modelo = m.id_modelo)";
+        try (Connection con = ConnectionDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("  " + rs.getInt("id_onibus") + " - " +
+                        rs.getString("placa") + " (" + rs.getString("descricao") +
+                        " - " + rs.getInt("capacidade") + " lugares - " + rs.getString("tipo") + ")");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao listar onibus: " + e.getMessage());
+        }
+    }
+
+    // lista as rotas disponíveis antes de pedir o ID
+    private void listarRotas() {
+        System.out.println("\nRotas disponiveis:");
+        String sql = "SELECT r.id_rota, r.preco, r.status, " +
+                "t1.cidade AS origem, t2.cidade AS destino " +
+                "FROM Rota r " +
+                "JOIN Terminal t1 ON (r.id_terminal_origem = t1.id_terminal) " +
+                "JOIN Terminal t2 ON (r.id_terminal_destino = t2.id_terminal)";
+        try (Connection con = ConnectionDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("  " + rs.getInt("id_rota") + " - " +
+                        rs.getString("origem") + " → " + rs.getString("destino") +
+                        " (R$ " + rs.getDouble("preco") + " - " + rs.getString("status") + ")");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao listar rotas: " + e.getMessage());
+        }
+    }
+
+    // lista os motoristas disponíveis antes de pedir o ID
+    private void listarMotoristas() {
+        System.out.println("\nMotoristas disponiveis:");
+        String sql = "SELECT id_motorista, nome, cnh, categoria_cnh, status FROM Motorista";
+        try (Connection con = ConnectionDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("  " + rs.getInt("id_motorista") + " - " +
+                        rs.getString("nome") + " (CNH: " + rs.getString("cnh") +
+                        " - Categoria: " + rs.getString("categoria_cnh") + " - " + rs.getString("status") + ")");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao listar motoristas: " + e.getMessage());
+        }
+    }
+
     private void cadastrar() {
         System.out.println("\n--- Cadastrar Viagem ---");
         try {
@@ -66,10 +124,19 @@ public class MenuViagem {
             String chegada = sc.nextLine();
             System.out.print("Status (agendada/em_andamento/concluida/cancelada): ");
             String status = sc.nextLine();
+
+            // mostra os ônibus disponíveis antes de pedir o ID
+            listarOnibus();
             System.out.print("ID do onibus: ");
             int idOnibus = sc.nextInt();
+
+            // mostra as rotas disponíveis antes de pedir o ID
+            listarRotas();
             System.out.print("ID da rota: ");
             int idRota = sc.nextInt();
+
+            // mostra os motoristas disponíveis antes de pedir o ID
+            listarMotoristas();
             System.out.print("ID do motorista: ");
             int idMotorista = sc.nextInt();
             sc.nextLine();

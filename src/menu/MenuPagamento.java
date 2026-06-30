@@ -2,7 +2,9 @@ package menu;
 
 import dao.PagamentoDAO;
 import model.Pagamento;
+import connection.ConnectionDB;
 
+import java.sql.*;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -57,6 +59,32 @@ public class MenuPagamento {
         sc.nextLine();
     }
 
+    // lista as passagens sem pagamento antes de pedir o ID
+    private void listarPassagens() {
+        System.out.println("\nPassagens disponiveis:");
+        String sql = "SELECT p.id_passagem, p.numero_assento, p.status, " +
+                "c.nome AS cliente, " +
+                "t1.cidade AS origem, t2.cidade AS destino " +
+                "FROM Passagem p " +
+                "JOIN Cliente c ON (p.id_cliente = c.id_cliente) " +
+                "JOIN Viagem v ON (p.id_viagem = v.id_viagem) " +
+                "JOIN Rota r ON (v.id_rota = r.id_rota) " +
+                "JOIN Terminal t1 ON (r.id_terminal_origem = t1.id_terminal) " +
+                "JOIN Terminal t2 ON (r.id_terminal_destino = t2.id_terminal)";
+        try (Connection con = ConnectionDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("  " + rs.getInt("id_passagem") + " - " +
+                        rs.getString("cliente") + " | Assento: " + rs.getInt("numero_assento") +
+                        " | " + rs.getString("origem") + " → " + rs.getString("destino") +
+                        " | Status: " + rs.getString("status"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao listar passagens: " + e.getMessage());
+        }
+    }
+
     private void cadastrar() {
         System.out.println("\n--- Registrar Pagamento ---");
         try {
@@ -69,6 +97,9 @@ public class MenuPagamento {
             String status = sc.nextLine();
             System.out.print("Data do pagamento (AAAA-MM-DD HH:MM:SS): ");
             String data = sc.nextLine();
+
+            // mostra as passagens disponíveis antes de pedir o ID
+            listarPassagens();
             System.out.print("ID da passagem: ");
             int idPassagem = sc.nextInt();
             sc.nextLine();

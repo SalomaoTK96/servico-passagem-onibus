@@ -2,7 +2,9 @@ package menu;
 
 import dao.PassagemDAO;
 import model.Passagem;
+import connection.ConnectionDB;
 
+import java.sql.*;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -57,6 +59,45 @@ public class MenuPassagem {
         sc.nextLine();
     }
 
+    // lista os clientes disponíveis antes de pedir o ID
+    private void listarClientes() {
+        System.out.println("\nClientes cadastrados:");
+        String sql = "SELECT id_cliente, nome, cpf FROM Cliente";
+        try (Connection con = ConnectionDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("  " + rs.getInt("id_cliente") + " - " +
+                        rs.getString("nome") + " (CPF: " + rs.getString("cpf") + ")");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao listar clientes: " + e.getMessage());
+        }
+    }
+
+    // lista as viagens disponíveis antes de pedir o ID
+    private void listarViagens() {
+        System.out.println("\nViagens disponiveis:");
+        String sql = "SELECT v.id_viagem, v.data_partida, v.data_chegada, v.status, " +
+                "t1.cidade AS origem, t2.cidade AS destino " +
+                "FROM Viagem v " +
+                "JOIN Rota r ON (v.id_rota = r.id_rota) " +
+                "JOIN Terminal t1 ON (r.id_terminal_origem = t1.id_terminal) " +
+                "JOIN Terminal t2 ON (r.id_terminal_destino = t2.id_terminal)";
+        try (Connection con = ConnectionDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("  " + rs.getInt("id_viagem") + " - " +
+                        rs.getString("origem") + " → " + rs.getString("destino") +
+                        " | Partida: " + rs.getString("data_partida") +
+                        " | Status: " + rs.getString("status"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao listar viagens: " + e.getMessage());
+        }
+    }
+
     private void cadastrar() {
         System.out.println("\n--- Comprar Passagem ---");
         try {
@@ -67,8 +108,14 @@ public class MenuPassagem {
             String dataCompra = sc.nextLine();
             System.out.print("Status (ativa/cancelada/utilizada): ");
             String status = sc.nextLine();
+
+            // mostra os clientes disponíveis antes de pedir o ID
+            listarClientes();
             System.out.print("ID do cliente: ");
             int idCliente = sc.nextInt();
+
+            // mostra as viagens disponíveis antes de pedir o ID
+            listarViagens();
             System.out.print("ID da viagem: ");
             int idViagem = sc.nextInt();
             sc.nextLine();
